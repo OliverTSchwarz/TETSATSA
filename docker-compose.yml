@@ -1,0 +1,18 @@
+version: "3"
+
+
+
+services:
+  database:
+    container_name: postgresql-database
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - ${POSTGRES_PORT}:5432
+volumes:
+  db:
+    driver: local
