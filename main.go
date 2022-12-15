@@ -11,10 +11,7 @@ import (
 	"os"
 )
 
-//var DB []Guest
-
-var db *gorm.DB
-var err error
+var DB *gorm.DB
 
 type Guest struct {
 	gorm.Model
@@ -34,21 +31,33 @@ func create(w http.ResponseWriter, req *http.Request) {
 
 	}
 
-	f, err := os.OpenFile("UserList.csv", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666) // methode to open and edit it
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer f.Close()                                                                           //closing the file and save it
-	_, err = f.WriteString(guest.FirstName + "" + guest.LastName + "  " + guest.Email + "\n") //writing the File
-	if err != nil {
-		log.Fatal(err)
-	}
-	//data := guest.Name + " " + guest.Email
-	//storing the guest info in the Database
+	//TODO: the guest variable now contains name, email, etc. > create a database entry for the guest variable via
+	//gorm and the CREATE method
+	//be aware: the DB var is a globally defined variable (see line 14), so you can use it here like that: DB.Create(...)
+
+	//alternative storage: file
+	/*
+
+		f, err := os.OpenFile("UserList.csv", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666) // methode to open and edit it
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		defer f.Close()                                                                           //closing the file and save it
+		_, err = f.WriteString(guest.FirstName + "" + guest.LastName + "  " + guest.Email + "\n") //writing the File
+		if err != nil {
+			log.Fatal(err)
+		}
+		//data := guest.Name + " " + guest.Email
+		//storing the guest info in the Database
+
+	*/
 
 	w.WriteHeader(http.StatusOK)
+	//TODO: send a response message back "registration succeeded"
 }
+
+/*
 func list(w http.ResponseWriter, req *http.Request) {
 	var guests []Guest
 	db.Find(guests)
@@ -62,57 +71,26 @@ func list(w http.ResponseWriter, req *http.Request) {
 
 }
 
-func main() {
-	guest := Guest{FirstName: "Oliver", LastName: "Wallisch", Email: "oliver@mail.schwarz"} //Datenbank eintrag
-	result := db.Create(&guest)
-	if result.Error != nil {
-		fmt.Println(err.Error())
-		pts := &guest
-		fmt.Println(*pts)
-
-		dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", os.Getenv("POSTGRES_HOST"),
-			os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_DB"), os.Getenv("POSTGRES_PORT"))
-		DB, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-		if err != nil {
-			log.Fatalf("failed to connect to Database: %s", err)
-
-		}
-		//user := Guest{FirstName: db, LastName: db, Email: db}
-		//db.Omit("firstName", "LastName", "email").Create(&user)
-
-		DB.AutoMigrate(&Guest{})
-
-		router := mux.NewRouter().StrictSlash(true)
-		router.HandleFunc("/registration", create).Methods(http.MethodPost)
-		router.HandleFunc("/guest", list).Methods(http.MethodGet)
-		router.HandleFunc("/registration", registration).Methods(http.MethodGet)
-		err = http.ListenAndServe(":8090", router)
-		if err != nil {
-			return
-		}
-
-	}
-
-}
-
-func registration(writer http.ResponseWriter, request *http.Request) {
-	pts := &Guest{
-		Model:           gorm.Model{},
-		FirstName:       "",
-		LastName:        "",
-		Email:           "",
-		CreateBatchSize: 0,
-	}
-	fmt.Println(pts)
-}
-
-//pts := &Guest{}
-/**pts = Guest{
-	Model:           gorm.Model{},
-	FirstName:       "",
-	LastName:        "",
-	Email:           "",
-	CreateBatchSize: 0,
-}
-
 */
+
+func main() {
+	//setup a database connection
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", os.Getenv("POSTGRES_HOST"),
+		os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_DB"), os.Getenv("POSTGRES_PORT"))
+	var err error
+	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatalf("failed to connect to Database: %s", err)
+
+	}
+
+	DB.AutoMigrate(&Guest{})
+
+	router := mux.NewRouter().StrictSlash(true)
+	router.HandleFunc("/registration", create).Methods(http.MethodPost)
+	//router.HandleFunc("/guest", list).Methods(http.MethodGet)
+	err = http.ListenAndServe(":8090", router)
+	if err != nil {
+		return
+	}
+}
