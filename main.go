@@ -32,6 +32,12 @@ func create(w http.ResponseWriter, req *http.Request) {
 	}
 
 	//TODO: the guest variable now contains name, email, etc. > create a database entry for the guest variable via
+	DB.Create(&guest)
+	result := DB.Create(&guest)
+	if result.Error != nil {
+		fmt.Printf("Error has confirmed")
+	}
+
 	//gorm and the CREATE method
 	//be aware: the DB var is a globally defined variable (see line 14), so you can use it here like that: DB.Create(...)
 
@@ -55,6 +61,10 @@ func create(w http.ResponseWriter, req *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	//TODO: send a response message back "registration succeeded"
+}
+
+func registration(w http.ResponseWriter) {
+
 }
 
 /*
